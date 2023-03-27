@@ -7,7 +7,14 @@ import { getCollection } from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
 
 const posts = (await getCollection('blog')).sort(
-	(a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
+	(a, b) => {
+		const aDate = a.data.pubDate?.valueOf() ?? Date.now();
+		const bDate = b.data.pubDate?.valueOf() ?? Date.now();
+		if (aDate === bDate) {
+			return a.data.title.localeCompare(b.data.title);
+		}
+		return aDate - bDate;
+	}
 );
 ---
 
@@ -41,7 +48,7 @@ const posts = (await getCollection('blog')).sort(
 					{
 						posts.map((post) => (
 							<li>
-								<FormattedDate date={post.data.pubDate} />
+								{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
 								<a href={`/blog/${post.slug}/`}>{post.data.title}</a>
 							</li>
 						))

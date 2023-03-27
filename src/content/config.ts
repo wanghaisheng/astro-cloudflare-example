@@ -9,7 +9,8 @@ const blog = defineCollection({
 		pubDate: z
 			.string()
 			.or(z.date())
-			.transform((val) => new Date(val)),
+			.optional()
+			.transform((val) => (val ? new Date(val) : undefined)),
 		updatedDate: z
 			.string()
 			.optional()

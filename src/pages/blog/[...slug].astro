@@ -1,21 +1,29 @@
 ---
-import { CollectionEntry, getCollection } from 'astro:content';
+import type { MarkdownInstance } from 'astro'
+import type { CollectionEntry } from 'astro:content';
+import { getEntryBySlug } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
+import NotFound from '../404.astro';
 
-export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.slug },
-		props: post,
-	}));
+const post = await getEntryBySlug('blog', Astro.params.slug ?? '')
+
+let Content: MarkdownInstance<CollectionEntry<'blog'>['data']>['Content'] | undefined
+
+if (post) {
+  const { Content: content } = await post.render()
+  Content = content
+} else {
+  Astro.response.status = 404
 }
-type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-const { Content } = await post.render();
 ---
-
-<BlogPost {...post.data}>
-	<h1>{post.data.title}</h1>
-	<Content />
-</BlogPost>
+{
+	post && Content ? (
+		<BlogPost {...post.data}>
+			<h1>{post.data.title}</h1>
+			<Content />
+		</BlogPost>
+	) : (
+		<NotFound />
+	)
+}
